@@ -1,409 +1,339 @@
-# PHP Database Connection Script
+<!-- Single View -->
 
-## Introduction
-This script demonstrates how to connect to a MySQL database, create a new database, create a table, insert records, and retrieve data using PHP.
-
-## Code Implementation
-
-### Connecting to the Database
-```php
 <?php
-    echo "Welcome to the stage where we are ready to get connected to a database <br>";
-    
-    // Database credentials
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $database = "dbharry";
-    
-    // Create a connection
-    $conn = mysqli_connect($servername, $username, $password, $database);
-    
-    // Check connection
-    if (!$conn){
-        die("Sorry, we failed to connect: " . mysqli_connect_error());
-    } else {
-        echo "Connection was successful";
-    }
-?>
-```
 
-### Creating a Database
-```php
-    // Create a new database
-    $sql = "CREATE DATABASE dbHarry2";
-    $result = mysqli_query($conn, $sql);
-    
-    // Check for database creation success
-    if($result){
-        echo "The database was created successfully!<br>";
-    } else {
-        echo "The database was not created successfully because of this error ---> " . mysqli_error($conn);
-    }
-```
+$serverName = "localhost";
+$userName = "root";
+$password = "";
+$dbName = "comp";
 
-### Creating a Table
-```php
-    // Create a table in the database (Table Name: phptrip)
-    $sql = "CREATE TABLE `phptrip` (
-        `sno` INT(6) NOT NULL AUTO_INCREMENT,
-        `name` VARCHAR(12) NOT NULL,
-        `dest` VARCHAR(6) NOT NULL,
-        PRIMARY KEY (`sno`)
-    )";
-    
-    $result = mysqli_query($conn, $sql);
-    
-    // Check for table creation success
-    if($result){
-        echo "The table was created successfully!<br>";
-    } else {
-        echo "The table was not created successfully because of this error ---> " . mysqli_error($conn);
-    }
-```
 
-### Inserting Data into the Table
-```php
-    // Variables to be inserted into the table
-    $name = "Vikrant";
-    $destination = "Russia";
-    
-    // SQL query to be executed
-    $sql = "INSERT INTO `phptrip` (`name`, `dest`) VALUES ('$name', '$destination')";
-    $result = mysqli_query($conn, $sql);
-    
-    // Check if the record was inserted successfully
-    if($result){
-        echo "The record has been inserted successfully!<br>";
-    } else {
-        echo "The record was not inserted successfully because of this error ---> " . mysqli_error($conn);
-    }
-```
+$conn = new mysqli($serverName, $userName, $password, $dbName);
 
-### Retrieving Data from the Table
-```php
-    // Select all records from the table
-    $sql = "SELECT * FROM `phptrip`";
-    $result = mysqli_query($conn, $sql);
-    
-    // Find the number of records returned
-    $num = mysqli_num_rows($result);
-    echo $num;
-    echo " records found in the Database<br>";
-    
-    // Fetch and display records using a while loop
-    while($row = mysqli_fetch_assoc($result)){
-        echo $row['sno'] .  ". Hello ". $row['name'] ." Welcome to ". $row['dest'];
-        echo "<br>";
-    }
-```
+if ($conn->connect_error)
+     die("Connect Failed:" . $conn->connect_error);
+else
+     echo ("Connection made succesfully");
 
-### Connecting to the Contacts Database and Inserting Data
-```php
-    // Connecting to the Database
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $database = "contacts";
-    
-    // Create a connection
-    $conn = mysqli_connect($servername, $username, $password, $database);
-    
-    // Die if connection was not successful
-    if (!$conn){
-        die("Sorry we failed to connect: ". mysqli_connect_error());
-    }
-    else{ 
-        // Submit these to a database
-        // SQL query to be executed 
-        $sql = "INSERT INTO `contactus` (`name`, `email`, `concern`, `dt`) VALUES ('$name', '$email', '$desc', current_timestamp())";
-        $result = mysqli_query($conn, $sql);
-    }
-```
+// Assuming you're already connected to the database
+// Check if 'id' is passed in the URL
+if (isset($_GET['id'])) {
+     $id = $_GET['id'];
+     echo "ID: " . $id . "<br>";  // Display the ID (optional for debugging)
 
-## Notes Application CRUD Operations
+     // Prepare the query
+     $query = "SELECT * FROM courses WHERE id = ?";
 
-### Handling Insert, Update, and Delete Operations
-```php
-<?php  
-// INSERT INTO `notes` (`sno`, `title`, `description`, `tstamp`) VALUES (NULL, 'But Books', 'Please buy books from Store', current_timestamp());
-$insert = false;
-$update = false;
-$delete = false;
-// Connect to the Database 
+     // Prepare and execute the statement
+     if ($stmt = $conn->prepare($query)) {
+          // Bind the parameter (i for integer)
+          $stmt->bind_param("i", $id);
+
+          // Execute the statement
+          $stmt->execute();
+
+          // Get the result
+          $result = $stmt->get_result();
+
+          // Check if any rows are returned
+          if ($result->num_rows > 0) {
+               // Fetch the first row as an associative array
+               $row = $result->fetch_assoc();
+
+               // Access the data from the $row array
+               echo "Course ID: " . $row['id'] . "<br>";
+               echo "Course Name: " . $row['name'] . "<br>";
+               echo "Course Description: " . $row['description'] . "<br>";
+               // Add other fields from the 'courses' table as needed
+          } else {
+               echo "No course found with the provided ID.";
+          }
+
+          // Close the statement
+          $stmt->close();
+     } else {
+          echo "Error preparing the query.";
+     }
+} else {
+     echo "ID parameter missing.";
+}
+
+
+
+
+
+
+<!-- Multi view -->
+
+
+
+
+
+
+
+
+<?php
+// Assuming you're already connected to the database
+// Database connection (replace with your database credentials)
 $servername = "localhost";
 $username = "root";
 $password = "";
-$database = "notes";
+$dbname = "comp";
 
-// Create a connection
-$conn = mysqli_connect($servername, $username, $password, $database);
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-// Die if connection was not successful
-if (!$conn){
-    die("Sorry we failed to connect: ". mysqli_connect_error());
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-if(isset($_GET['delete'])){
-  $sno = $_GET['delete'];
-  $delete = true;
-  $sql = "DELETE FROM `notes` WHERE `sno` = $sno";
-  $result = mysqli_query($conn, $sql);
-}
-if ($_SERVER['REQUEST_METHOD'] == 'POST'){
-if (isset( $_POST['snoEdit'])){
-  // Update the record
-    $sno = $_POST["snoEdit"];
-    $title = $_POST["titleEdit"];
-    $description = $_POST["descriptionEdit"];
+// Fetch data from the 'courses' table
+$query = "SELECT * FROM courses";
+$result = $conn->query($query);
 
-  // Sql query to be executed
-  $sql = "UPDATE `notes` SET `title` = '$title' , `description` = '$description' WHERE `notes`.`sno` = $sno";
-  $result = mysqli_query($conn, $sql);
-  if($result){
-    $update = true;
-}
-else{
-    echo "We could not update the record successfully";
-}
-}
-else{
-    $title = $_POST["title"];
-    $description = $_POST["description"];
-
-  // Sql query to be executed
-  $sql = "INSERT INTO `notes` (`title`, `description`) VALUES ('$title', '$description')";
-  $result = mysqli_query($conn, $sql);
-
-   
-  if($result){ 
-      $insert = true;
-  }
-  else{
-      echo "The record was not inserted successfully because of this error ---> ". mysqli_error($conn);
-  } 
-}
-}
 ?>
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
-
-
-  <title>iNotes - Notes taking made easy</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course List</title>
+    <link rel="stylesheet" href="styles.css">  <!-- Link to external CSS file -->
 </head>
-
 <body>
- 
+    <header>
+        <h1>Course List</h1>
+    </header>
 
-  <!-- Edit Modal -->
-  <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editModalLabel">Edit this Note</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <form action="/crud/index.php" method="POST">
-          <div class="modal-body">
-            <input type="hidden" name="snoEdit" id="snoEdit">
-            <div class="form-group">
-              <label for="title">Note Title</label>
-              <input type="text" class="form-control" id="titleEdit" name="titleEdit" aria-describedby="emailHelp">
-            </div>
+    <section class="course-list">
+        <?php
+        // Check if any rows are returned
+        if ($result->num_rows > 0) {
+            // Loop through all the rows and display them
+            while ($row = $result->fetch_assoc()) {
+                echo "<div class='course-container'>";
+                  echo "<div class='course-container'>";
 
-            <div class="form-group">
-              <label for="desc">Note Description</label>
-              <textarea class="form-control" id="descriptionEdit" name="descriptionEdit" rows="3"></textarea>
-            </div> 
-          </div>
-          <div class="modal-footer d-block mr-auto">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Save changes</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+                echo "<h2>" . $row['name'] . "</h2>";  // Course name in h2
+                                echo "<img src='" . $row['image'] . "' alt='Course Image' class='course-image' />";  // Display the image
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#"><img src="/crud/logo.svg" height="28px" alt=""></a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Contact Us</a>
-        </li>
-
-      </ul>
-      <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-      </form>
-    </div>
-  </nav>
-
-  <?php
-  if($insert){
-    echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
-    <strong>Success!</strong> Your note has been inserted successfully
-    <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-      <span aria-hidden='true'>×</span>
-    </button>
-  </div>";
-  }
-  ?>
-  <?php
-  if($delete){
-    echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
-    <strong>Success!</strong> Your note has been deleted successfully
-    <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-      <span aria-hidden='true'>×</span>
-    </button>
-  </div>";
-  }
-  ?>
-  <?php
-  if($update){
-    echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
-    <strong>Success!</strong> Your note has been updated successfully
-    <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-      <span aria-hidden='true'>×</span>
-    </button>
-  </div>";
-  }
-  ?>
-  <div class="container my-4">
-    <h2>Add a Note to iNotes</h2>
-    <form action="/crud/index.php" method="POST">
-      <div class="form-group">
-        <label for="title">Note Title</label>
-        <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp">
-      </div>
-
-      <div class="form-group">
-        <label for="desc">Note Description</label>
-        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Add Note</button>
-    </form>
-  </div>
-
-  <div class="container my-4">
-
-
-    <table class="table" id="myTable">
-      <thead>
-        <tr>
-          <th scope="col">S.No</th>
-          <th scope="col">Title</th>
-          <th scope="col">Description</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php 
-          $sql = "SELECT * FROM `notes`";
-          $result = mysqli_query($conn, $sql);
-          $sno = 0;
-          while($row = mysqli_fetch_assoc($result)){
-            $sno = $sno + 1;
-            echo "<tr>
-            <th scope='row'>". $sno . "</th>
-            <td>". $row['title'] . "</td>
-            <td>". $row['description'] . "</td>
-            <td> <button class='edit btn btn-sm btn-primary' id=".$row['sno'].">Edit</button> <button class='delete btn btn-sm btn-primary' id=d".$row['sno'].">Delete</button>  </td>
-          </tr>";
-        } 
-          ?>
-
-
-      </tbody>
-    </table>
-  </div>
-  <hr>
-  <!-- Optional JavaScript -->
-  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-    integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-    crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-    crossorigin="anonymous"></script>
-  <script src="//cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-  <script>
-    $(document).ready(function () {
-      $('#myTable').DataTable();
-
-    });
-  </script>
-  <script>
-    edits = document.getElementsByClassName('edit');
-    Array.from(edits).forEach((element) => {
-      element.addEventListener("click", (e) => {
-        console.log("edit ");
-        tr = e.target.parentNode.parentNode;
-        title = tr.getElementsByTagName("td")[0].innerText;
-        description = tr.getElementsByTagName("td")[1].innerText;
-        console.log(title, description);
-        titleEdit.value = title;
-        descriptionEdit.value = description;
-        snoEdit.value = e.target.id;
-        console.log(e.target.id)
-        $('#editModal').modal('toggle');
-      })
-    })
-
-    deletes = document.getElementsByClassName('delete');
-    Array.from(deletes).forEach((element) => {
-      element.addEventListener("click", (e) => {
-        console.log("edit ");
-        sno = e.target.id.substr(1);
-
-        if (confirm("Are you sure you want to delete this note!")) {
-          console.log("yes");
-          window.location = `/crud/index.php?delete=${sno}`;
-          // TODO: Create a form and use post request to submit a form
+                echo "<p><strong>Description:</strong> " . $row['description'] . "</p>";  // Course description
+                echo "<p><strong>Course ID:</strong> " . $row['id'] . "</p>";  // Course ID
+                echo "</div>";  // End course container
+            }
+        } else {
+            echo "<p>No courses available.</p>";
         }
-        else {
-          console.log("no");
-        }
-      })
-    })
-  </script>
+
+        // Close the database connection
+        $conn->close();
+        ?>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Course List. All rights reserved.</p>
+    </footer>
+
 </body>
-
 </html>
 
-```
+/_ Basic Reset _/
 
-## Conclusion
-This script successfully connects to a MySQL database, creates a new database, adds a table within it, inserts records, and retrieves data. Additionally, it implements CRUD operations for a notes application. Ensure your MySQL server is running and credentials are correct before executing the script.
+- {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  }
 
+/_ Body Styling _/
+body {
+font-family: Arial, sans-serif;
+background-color: #f4f4f4;
+color: #333;
+padding: 20px;
+}
+
+/_ Header Styling _/
+header {
+background-color: #4CAF50;
+color: white;
+padding: 20px;
+text-align: center;
+}
+
+header h1 {
+font-size: 36px;
+}
+
+/_ Course List Styling _/
+.course-list {
+display: flex;
+flex-wrap: wrap;
+justify-content: space-between;
+margin-top: 20px;
+}
+
+.course-container {
+background-color: white;
+border: 1px solid #ddd;
+border-radius: 8px;
+padding: 20px;
+width: 30%;
+margin-bottom: 20px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.course-container h2 {
+font-size: 24px;
+color: #333;
+}
+
+.course-container p {
+font-size: 16px;
+margin: 10px 0;
+}
+
+footer {
+text-align: center;
+margin-top: 30px;
+font-size: 14px;
+color: #777;
+}
+
+/_ Responsive design _/
+@media (max-width: 768px) {
+.course-container {
+width: 100%;
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php
+session_start();  // Start the session
+
+// Database connection
+$servername = "localhost";
+$username = "root"; // your database username
+$password = ""; // your database password
+$dbname = "user_system";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Register new user
+if (isset($_POST['register'])) {
+    $reg_username = $_POST['register_username'];
+    $reg_password = $_POST['register_password'];
+
+    // Check if the username already exists
+    $sql = "SELECT * FROM users WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('s', $reg_username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        echo "<script>alert('Username already exists!');</script>";
+    } else {
+        // Hash password for security
+        $hashed_password = password_hash($reg_password, PASSWORD_DEFAULT);
+
+        // Insert new user into the database
+        $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('ss', $reg_username, $hashed_password);
+        $stmt->execute();
+
+        echo "<script>alert('Registration successful! Please login.');</script>";
+    }
+}
+
+// Login user
+if (isset($_POST['login'])) {
+    $login_username = $_POST['login_username'];
+    $login_password = $_POST['login_password'];
+
+    // Check if the username exists
+    $sql = "SELECT * FROM users WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('s', $login_username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        
+        // Verify the password
+        if (password_verify($login_password, $row['password'])) {
+            $_SESSION['isLoggedIn'] = true;
+            $_SESSION['username'] = $login_username;
+            header('Location: dashboard.php');
+            exit();
+        } else {
+            echo "<script>alert('Incorrect password!');</script>";
+        }
+    } else {
+        echo "<script>alert('User not found!');</script>";
+    }
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register</title>
+</head>
+<body>
+
+<h1>Login and Registration System</h1>
+
+<!-- Login Form -->
+<h2>Login</h2>
+<form method="POST" action="">
+    <label for="login_username">Username:</label>
+    <input type="text" name="login_username" required>
+    <br>
+    <label for="login_password">Password:</label>
+    <input type="password" name="login_password" required>
+    <br>
+    <button type="submit" name="login">Login</button>
+</form>
+
+<!-- Register Form -->
+<h2>Register</h2>
+<form method="POST" action="">
+    <label for="register_username">Username:</label>
+    <input type="text" name="register_username" required>
+    <br>
+    <label for="register_password">Password:</label>
+    <input type="password" name="register_password" required>
+    <br>
+    <button type="submit" name="register">Register</button>
+</form>
+
+</body>
+</html>
+
+<?php
+$conn->close(); // Close the connection
+?>
