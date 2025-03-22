@@ -17,7 +17,8 @@ app.get('/', (req, res) => {
  });// Webhook endpoint
 app.post('/webhook', (req, res) => {
     const data = req.body;
-
+    console.log(req)
+    console.log(req.body)
     // Check if we have received any data
     if (data) {
         // Log received data (you can replace this with your own logic)
